@@ -1,7 +1,7 @@
 body {
     margin: 0;
     padding: 0;
-    background-color: #111;
+    background-color: #23272b;
     color: white;
 }
 
@@ -10,7 +10,7 @@ html {
     padding: 0;
 }
 
-.navbar {
+/* .navbar {
     display: inline;
 }
 
@@ -26,6 +26,25 @@ a.navbar-item.active {
 
 a.navbar-item:hover {
     text-decoration: underline;
+    cursor: pointer;
+} */
+
+.navbar {
+    margin:0;
+    padding-top: 10px;
+    padding-left: 10px;
+    width: 100%;
+}
+
+.navbar-item, .dropdown-item {
+    padding-right: 20px;
+    cursor: pointer;
+}
+
+.ts-content {
+    width: 100%;
+    padding-left: 20px;
+    padding-right: 20px;
 }
 
 .lds-grid {
@@ -100,6 +119,10 @@ a.navbar-item:hover {
     }
 }
 
-.hide {
-    display: none !important;
+.center {
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    position: absolute;
+    text-align: center;
 }

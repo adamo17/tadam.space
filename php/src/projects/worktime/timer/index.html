@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>tadam.space dashboard</title>
+
+        <link
+            rel="stylesheet"
+            href="https://pro.fontawesome.com/releases/v6.0.0-beta3/css/all.css"
+        />
+        <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+            integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9"
+            crossorigin="anonymous"
+        />
+
+        <link rel="stylesheet" href="/styles/global.css" />
+    </head>
+    <body>
+        <div id="root">
+            <nav class="navbar navbar-expand-lg">
+                <div class="container-fluid">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item nav-link">
+                            <img
+                                src="/images/tspace.png"
+                                alt="TSPACE"
+                                width="170px"
+                                class="navbar-item"
+                            />
+                        </li>
+                        <li class="nav-item nav-link">
+                            <a
+                                class="link-light navbar-item link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover"
+                                href="/"
+                            >
+                                Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item nav-link">
+                            <a
+                                class="link-light navbar-item link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover"
+                            >
+                                Projects
+                            </a>
+                        </li>
+                        <li class="nav-item nav-link">
+                            <a
+                                class="link-light navbar-item link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover"
+                            >
+                                Issues
+                            </a>
+                        </li>
+                        <li class="nav-item nav-link">
+                            <a
+                                class="link-light navbar-item link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover"
+                            >
+                                Reports
+                            </a>
+                        </li>
+                    </ul>
+                    <a class="nav-link nav-item navbar-item">
+                        <i class="fa-light fa-bell"></i>
+                    </a>
+                    <a class="nav-link nav-item navbar-item">
+                        <i class="fa-light fa-circle-question"></i>
+                    </a>
+                    <a class="nav-link nav-item navbar-item">
+                        <i class="fa-light fa-wrench"></i>
+                    </a>
+                    <div class="dropstart" data-bs-theme="dark">
+                        <a
+                            class="nav-link nav-item navbar-item"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false"
+                            role="button"
+                        >
+                            <img src="" alt="" class="rounded" id="avatar" />
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a class="dropdown-item" href="#">Profile</a>
+                            </li>
+                            <li>
+                                <a
+                                    class="dropdown-item link-danger"
+                                    onclick="logout()"
+                                    >Logout</a
+                                >
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+
+            <div class="ts-content">
+                <div
+                    class="alert alert-danger d-none"
+                    role="alert"
+                    id="error-alert"
+                    data-bs-theme="dark"
+                >
+                    <span id="error-alert-text"></span>
+                </div>
+
+                <p id="timer">00:00:00</p>
+                <br />
+                <button
+                    type="button"
+                    class="btn btn-light"
+                    onclick="start()"
+                    id="start"
+                >
+                    start
+                </button>
+                <button
+                    type="button"
+                    class="btn btn-light"
+                    onclick="resume()"
+                    id="resume"
+                >
+                    play
+                </button>
+                <button
+                    type="button"
+                    class="btn btn-light"
+                    onclick="resume()"
+                    id="resume1"
+                >
+                    play
+                </button>
+                <button
+                    type="button"
+                    class="btn btn-light"
+                    onclick="pause()"
+                    id="pause"
+                >
+                    pause
+                </button>
+            </div>
+        </div>
+
+        <!-- Loader -->
+        <div class="lds-grid" id="loader">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+        <!-- jQuery & ajax, Bootstrap -->
+        <script
+            src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"
+            integrity="sha512-3gJwYpMe3QewGELv8k/BX9vcqhryRdzRMxVfq6ngyWXwo03GFEzjsUm8Q7RZcHPHksttq7/GFoxjCVUjkjvPdw=="
+            crossorigin="anonymous"
+            referrerpolicy="no-referrer"
+        ></script>
+        <script
+            src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm"
+            crossorigin="anonymous"
+        ></script>
+        <script src="../../../scripts/cookies.js"></script>
+        <script src="../../../scripts/jwt.js"></script>
+
+        <script>
+            let paused = false;
+
+            $("#root").hide();
+            let token = getCookie("token");
+            $.ajax({
+                url: "/api/v1/user/verify_token.php",
+                headers: { Authorization: "Bearer " + token },
+                success: function (data) {
+                    if (!data.valid)
+                        window.location.replace(
+                            "/login.html?msg=You%20need%20to%20be%20logged%20in%20to%20view%20this%20page."
+                        );
+                },
+            });
+            let jwt = parseJwt(getCookie("token"));
+            username = atob(jwt.user);
+            let params = new URLSearchParams(window.location.search);
+            if (params.has("error")) {
+                $("#error-alert").show();
+                $("#error-alert-text").text(params.get("error"));
+            }
+            function errorAlert(message, reset = false) {
+                const unixTimestamp = timestamp * 1000; // Replace with your Unix timestamp in milliseconds
+                const currentTime = new Date().getTime();
+                const elapsedMilliseconds = currentTime - unixTimestamp;
+
+                const elapsedTimeElement = document.getElementById("elapsed");
+                elapsedTimeElement.textContent =
+                    formatTime(elapsedMilliseconds);
+            }
+
+            let startTime;
+            let interval;
+            let pausedTime = 0;
+            function formatMilliseconds(milliseconds) {
+                const seconds = Math.floor(milliseconds / 1000);
+                const minutes = Math.floor(seconds / 60);
+                const hours = Math.floor(minutes / 60);
+
+                const formattedHours = String(hours).padStart(2, "0");
+                const formattedMinutes = String(minutes % 60).padStart(2, "0");
+                const formattedSeconds = String(seconds % 60).padStart(2, "0");
+
+                return `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
+            }
+            function updateTimer(time) {
+                const currentTime = new Date().getTime();
+                const elapsedTime = currentTime - startTime + pausedTime;
+                timerElement.textContent = formatMilliseconds(elapsedTime);
+            }
+            function updateTimer1(time) {
+                const currentTime = new Date().getTime();
+                const elapsedTime = currentTime - startTime;
+                timerElement.textContent = formatMilliseconds(elapsedTime);
+            }
+            const timerElement = document.getElementById("timer");
+            const pauseButton = document.getElementById("pause");
+            const resumeButton = document.getElementById("resume");
+            const resumeButton1 = document.getElementById("resume1");
+            pauseButton.addEventListener("click", () => {
+                clearInterval(interval);
+                pausedTime += new Date().getTime() - startTime;
+            });
+            resumeButton.addEventListener("click", () => {
+                startTime = new Date().getTime() - pausedTime;
+                interval = setInterval(updateTimer, 1000);
+                pausedTime = 0; // Reset paused time
+            });
+            resumeButton1.addEventListener("click", () => {
+                // startTime = new Date().getTime() - pausedTime;
+                interval = setInterval(updateTimer1, 1000);
+                pausedTime = 0; // Reset paused time
+            });
+            function getUnixTimestamp() {
+                const currentTime = new Date().getTime();
+                const elapsedMilliseconds =
+                    currentTime - startTime + pausedTime;
+                const unixTimestamp =
+                    Math.floor(currentTime / 1000) -
+                    Math.floor(elapsedMilliseconds / 1000);
+                return unixTimestamp;
+            }
+
+            async function prepare() {
+                if (params.has("timer_id")) {
+                    try {
+                        await $.ajax({
+                            url: "/api/v1/timer/get.php",
+                            method: "POST",
+                            headers: {
+                                Authorization: "Bearer " + token,
+                                "Content-Type": "application/json",
+                            },
+                            data: JSON.stringify({
+                                id: params.get("timer_id"),
+                            }),
+                            success: function (data) {
+                                $("#start").hide();
+                                $("#pause").hide();
+                                $("#resume").hide();
+                                $("#resume1").show();
+                                elapsed = data.elapsed;
+                                startTime = new Date().getTime() - elapsed;
+                                updateTimer();
+                            },
+                            error: function (data) {},
+                        });
+                    } catch (e) {
+                        // console.log(e);
+                    }
+                } else {
+                    $("#resume").hide();
+                    $("#resume1").hide();
+                    $("#pause").hide();
+                }
+            }
+
+            $.ajax({
+                url: "/api/v1/user/get_avatar.php",
+                headers: { Authorization: "Bearer " + token },
+                success: function (data) {
+                    $("#avatar").attr("src", data.url);
+                    $("#avatar").attr("alt", username);
+                },
+            });
+            $(document).ready(async function () {
+                await prepare();
+                $("#loader").fadeOut("fast");
+                $("#root").fadeIn("fast");
+            });
+            function logout() {
+                $("#loader").fadeIn("fast");
+                $("#root").fadeOut("fast");
+                $.ajax({
+                    url: "/api/v1/user/logout.php",
+                    headers: { Authorization: "Bearer " + token },
+                    complete: function () {
+                        window.location.replace("/login.html");
+                    },
+                });
+            }
+
+            // function start() {
+            //     $("#loader").fadeIn("fast");
+            //     $("#root").fadeOut("fast");
+            //     $("#start").hide();
+            //     $("#pause").show();
+
+            //     $.ajax({
+            //         url: "/api/v1/timer/create.php",
+            //         method: "POST",
+            //         headers: {
+            //             Authorization: "Bearer " + token,
+            //         },
+            //         success: function (data) {
+            //             window.location.replace("/projects/worktime/timer/?timer_id=" + data.id);
+            //         },
+            //         error: function (data) {},
+            //         complete: function () {
+            //             $("#loader").fadeOut("fast");
+            //             $("#root").fadeIn("fast");
+            //         },
+            //     });
+            // }
+            function pause() {
+                $("#loader").fadeIn("fast");
+                $("#root").fadeOut("fast");
+                $("#pause").hide();
+                $("#resume").show();
+
+                $.ajax({
+                    url: "/api/v1/timer/save.php",
+                    method: "POST",
+                    headers: {
+                        Authorization: "Bearer " + token,
+                        "Content-Type": "application/json",
+                    },
+                    data: JSON.stringify({
+                        id: params.get("timer_id"),
+                        elapsed: getUnixTimestamp() / 1000,
+                    }),
+                    success: function (data) {
+                        // window.location.replace("/projects/worktime/timer/?timer_id=" + data.id);
+                    },
+                    error: function (data) {},
+                    complete: function () {
+                        $("#loader").fadeOut("fast");
+                        $("#root").fadeIn("fast");
+                    },
+                });
+                $("#loader").fadeOut("fast");
+                $("#root").fadeIn("fast");
+            }
+            function resume() {
+                $("#loader").fadeIn("fast");
+                $("#root").fadeOut("fast");
+                $("#resume").hide();
+                $("#resume1").hide();
+                $("#pause").show();
+                $("#loader").fadeOut("fast");
+                $("#root").fadeIn("fast");
+            }
+        </script>
+    </body>
+</html>

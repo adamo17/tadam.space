@@ -54,6 +54,10 @@
                     <br />
                     <h3>Log in</h3>
                     <br />
+                    <div class="alert alert-warning" role="alert" data-bs-theme="dark" id="login-alert">
+                        <span id="login-alert-text"></span>
+                    </div>
+                    
                     <div class="mb-3 row">
                         <label for="username" class="col-sm-2 col-form-label"
                             >Username</label
@@ -119,30 +123,75 @@
             crossorigin="anonymous"
         ></script>
         <script src="scripts/sha512.js"></script>
+        <script src="scripts/cookies.js"></script>
 
         <script>
+            var locked = false;
             $("#root").hide();
+            $("#login-alert").hide();
+            let token = getCookie("token")
+            $.ajax({
+                url: "/api/v1/user/verify_token.php",
+                headers: {"Authorization": "Bearer " + token},
+                success: function(data) {
+                    let valid = data.valid;
+                    if(valid) {
+                        window.location.replace("./index.html");
+                    }
+                }
+            })
             $(document).ready(function () {
-                $("#loader").fadeOut("fast");
-                $("#root").fadeIn("fast");
+                if(locked != true) {
+                    $("#loader").fadeOut("fast");
+                    $("#root").fadeIn("fast");
+                } else {
+                    $("#loader").fadeOut("fast");
+                    window.location.replace("./locked.html")
+                }
+
+                let params = new URLSearchParams(window.location.search)
+                if(params.has("msg")) {
+                    $("#login-alert").removeClass("alert-danger");
+                    $("#login-alert").addClass("alert-warning");
+                    $("#login-alert-text").text(params.get("msg"));
+                    $("#login-alert").fadeIn("fast");
+                }
             });
             function login() {
-                var username = SHA512($("#username").val());
+                var username = btoa($("#username").val());
                 var password = SHA512($("#password").val());
                 $("#loader").fadeIn("fast");
                 $("#root").fadeOut("fast");
+                $("#login-alert").fadeOut("fast");
                 $.ajax({
                     url: "/api/v1/user/login.php",
-                    data: {
-                        username: username,
-                        password: password,
-                    },
+                    data: JSON.stringify({
+                        "username": username,
+                        "password": password,
+                    }),
                     method: "POST",
+                    headers: {"Content-Type": "application/json"},
                     success: function(data) {
-                        $("#username").val("gg")
+                        // $("#login-alert").removeClass("alert-danger");
+                        // $("#login-alert").removeClass("alert-warning");
+                        // $("#login-alert").addClass("alert-success");
+                        // $("#login-alert").fadeIn("fast");
+                        // $("#login-alert-text").text("Success! Token: " + data.token);
+                        setCookie("token", data.token, 7);
+                        window.location.replace("./login.html");
                     },
                     error: function(data) {
-                        $("#username").val("lol")
+                        if(data.responseJSON.code == "3" || data.responseJSON.code == "4"){
+                            $("#login-alert").removeClass("alert-danger");
+                            $("#login-alert").addClass("alert-warning");
+                        } else if (data.responseJSON.code == "6") {
+                            window.location.replace("./locked.html")
+                        } else {
+                            $("#login-alert").removeClass("alert-warning");
+                            $("#login-alert").addClass("alert-danger");
+                        }
+                        $("#login-alert").fadeIn("fast");
+                        $("#login-alert-text").text(data.responseJSON.message);
                     },
                     complete: function() {
                         $("#loader").fadeOut("fast");
