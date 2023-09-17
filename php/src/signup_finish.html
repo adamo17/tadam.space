@@ -1,0 +1,148 @@
+<?php
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>tadam.space dashboard</title>
+
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+            integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA=="
+            crossorigin="anonymous"
+            referrerpolicy="no-referrer"
+        />
+        <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+            integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9"
+            crossorigin="anonymous"
+        />
+
+        <link rel="stylesheet" href="/styles/global.css" />
+    </head>
+    <body>
+        <div class="container-fluid text-center" id="root">
+            <!-- Navbar -->
+            <nav class="navbar">
+                <div class="row text-center">
+                    <div class="col text-start">
+                        <img
+                            src="/images/tspace.png"
+                            alt="TSPACE"
+                            width="200px"
+                        />
+                    </div>
+                </div>
+            </nav>
+
+            <!-- * Content -->
+            <div class="container-fluid text-center h-100" id="timer">
+                <div
+                    class="d-flex justify-content-md-center align-items-center vh-90"
+                >
+                    <div class="col-3">
+                        <h3>
+                            <i class="fa-solid fa-at"></i> Choose an username
+                        </h3>
+                        <div
+                            class="alert alert-dark mt-4 fade show d-none"
+                            role="alert"
+                            data-bs-theme="dark"
+                            id="alert"
+                        >
+                            <span id="alert-text"></span>
+                        </div>
+                        An username must be unique and must be 3-32 characters in length.
+                        <div>
+                            <div class="mb-3 mt-3">
+                                <input
+                                    type="text"
+                                    class="form-control text-center"
+                                    id="code"
+                                    placeholder="johndoe"
+                                    data-bs-theme="dark"
+                                />
+                            </div>
+                            <!-- <i class="text-white-50"
+                                >The code is valid for 5 minutes.</i
+                            > -->
+
+                            <button
+                                class="btn btn-outline-light w-100 mt-3 mb-3"
+                                onclick="verify()"
+                            >
+                                Confirm <i class="fa fa-arrow-right"></i>
+                            </button>
+                            <!-- <button
+                                class="btn btn-link text-white link-underline-opacity-0 link-underline-opacity-75-hover link-underline-light link-offset-3-hover"
+                                onclick="resend()"
+                                id="resend-btn"
+                            >
+                                <i class="fa-solid fa-envelope"></i> Resend
+                            </button> -->
+                            <button
+                                class="btn btn-link text-white link-underline-opacity-0 link-underline-opacity-75-hover link-underline-light link-offset-3-hover"
+                                onclick="logout()"
+                                id="resend-btn"
+                            >
+                                <i class="fa-solid fa-right-from-bracket"></i> Logout
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Loader -->
+        <div class="lds-grid" id="loader">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+
+        <!-- jQuery & ajax, Bootstrap -->
+        <script
+            src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"
+            integrity="sha512-3gJwYpMe3QewGELv8k/BX9vcqhryRdzRMxVfq6ngyWXwo03GFEzjsUm8Q7RZcHPHksttq7/GFoxjCVUjkjvPdw=="
+            crossorigin="anonymous"
+            referrerpolicy="no-referrer"
+        ></script>
+        <script
+            src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm"
+            crossorigin="anonymous"
+        ></script>
+        <script src="../scripts/sha512.js"></script>
+        <script src="../scripts/cookies.js"></script>
+        <script src="../scripts/jwt.js"></script>
+
+        <script>
+            setCookie("gCallback", true, 1);
+            var locked = false;
+            $("#root").hide();
+            let gCallback = getCookie("gCallback");
+            if (!gCallback) {
+                window.location.replace(
+                    "/"
+                );
+            }
+            $(document).ready(function () {
+                $("#loader").fadeOut("fast");
+                $("#root").fadeIn("fast");
+            });
+
+            function setUsername() {
+                $("#loader").fadeIn("fast");
+                $("#root").fadeOut("fast");
+                let username = $("#username")
+            }
+        </script>
+    </body>
+</html>

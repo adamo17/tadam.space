@@ -13,6 +13,7 @@ enum ErrorType {
     case UNAUTHORIZED;
     case ACCOUNT_DISABLED;
     case NOT_FOUND;
+    case EXPIRED;
 }
 
 class ErrorMessage {
@@ -90,6 +91,12 @@ class ErrorMessage {
 
             case ErrorType::NOT_FOUND:
                 $this->errorCode = "12";
+                $this->json = json_encode(["code" => $this->errorCode, "message" => $message]);
+                http_response_code(404);
+                break;
+
+            case ErrorType::EXPIRED:
+                $this->errorCode = "13";
                 $this->json = json_encode(["code" => $this->errorCode, "message" => $message]);
                 http_response_code(404);
                 break;

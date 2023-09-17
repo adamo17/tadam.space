@@ -17,7 +17,7 @@ $elapsed = htmlspecialchars($req["elapsed"]);
 
 $user_id = $auth["id"];
 try {
-    query(sprintf("UPDATE timers SET elapsed=%s WHERE id=%s AND owner=%s", $elapsed, $id, $user_id));
+    query(sprintf("UPDATE timers SET elapsed='%s' WHERE id=%s AND owner=%s", $elapsed, $id, $user_id));
 } catch (Exception $e) {
     die(new ErrorMessage(ErrorType::SERVER_ERROR, 
         "An error occurred while saving progress. Please try again later. 

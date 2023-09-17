@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>tadam.space dashboard</title>
+
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+            integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA=="
+            crossorigin="anonymous"
+            referrerpolicy="no-referrer"
+        />
+        <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+            integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9"
+            crossorigin="anonymous"
+        />
+
+        <link rel="stylesheet" href="/styles/global.css" />
+    </head>
+    <body>
+        <div class="container-fluid text-center" id="root">
+            <!-- Navbar -->
+            <nav class="navbar">
+                <div class="row text-center">
+                    <div class="col text-start">
+                        <img
+                            src="/images/tspace.png"
+                            alt="TSPACE"
+                            width="200px"
+                        />
+                    </div>
+                </div>
+            </nav>
+
+            <!-- * Content -->
+            <div class="container-fluid text-center h-100" id="timer">
+                <div
+                    class="d-flex justify-content-md-center align-items-center vh-90"
+                >
+                    <div class="col-3">
+                        <h3>Register</h3>
+                        <div
+                            class="alert alert-warning mt-4 d-none fade show"
+                            role="alert"
+                            data-bs-theme="dark"
+                            id="alert"
+                        >
+                            <span id="alert-text"></span>
+                        </div>
+                        <div class="mb-3 text-start">
+                            <label for="username" class="form-label"
+                                >Username</label
+                            >
+                            <input
+                                type="text"
+                                class="form-control"
+                                id="username"
+                                placeholder="ex. johndoe01"
+                                data-bs-theme="dark"
+                            />
+                        </div>
+                        <div class="mb-3 text-start">
+                            <label for="email" class="form-label">Email</label>
+                            <input
+                                type="email"
+                                class="form-control"
+                                id="email"
+                                placeholder="ex. john@doe.com"
+                                data-bs-theme="dark"
+                            />
+                        </div>
+                        <div class="row g-3 text-start mb-3">
+                            <div class="col">
+                                <label for="password" class="form-label"
+                                    >Password</label
+                                >
+                                <input
+                                    type="password"
+                                    class="form-control"
+                                    placeholder="ex. J0hnD03!"
+                                    id="password"
+                                    data-bs-theme="dark"
+                                />
+                            </div>
+                            <div class="col">
+                                <label for="password1" class="form-label"
+                                    >Repeat Password</label
+                                >
+                                <input
+                                    type="password"
+                                    class="form-control"
+                                    id="password1"
+                                    data-bs-theme="dark"
+                                />
+                            </div>
+                        </div>
+                        <div>
+                            <i class="text-white-50"
+                                >By registering, you agree to follow our Terms
+                                of Service.</i
+                            >
+                            <div id="turnstileChallenge" class="mb-3 mt-3"></div>
+                            <button
+                                class="btn btn-outline-light w-100 mb-3"
+                                onclick="register()"
+                            >
+                                Register <i class="fa fa-arrow-right"></i>
+                            </button>
+                            <a
+                                class="link text-white link-underline-opacity-0 link-underline-opacity-75-hover link-underline-light link-offset-3-hover"
+                                href="login.html"
+                                ><i class="fas fa-arrow-left"></i> Already have
+                                an account?</a
+                            >
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Loader -->
+        <div class="lds-grid" id="loader">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+
+        <!-- jQuery & ajax, Bootstrap -->
+        <script
+            src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"
+            integrity="sha512-3gJwYpMe3QewGELv8k/BX9vcqhryRdzRMxVfq6ngyWXwo03GFEzjsUm8Q7RZcHPHksttq7/GFoxjCVUjkjvPdw=="
+            crossorigin="anonymous"
+            referrerpolicy="no-referrer"
+        ></script>
+        <script
+            src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm"
+            crossorigin="anonymous"
+        ></script>
+        <script src="scripts/sha512.js"></script>
+        <script src="scripts/cookies.js"></script>
+        <script src="scripts/validation.js"></script>
+
+        <!-- Turnstile -->
+        <script
+            src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback"
+            defer
+        ></script>
+
+        <script>
+            let canContinue = false;
+            let tsToken = "";
+            window.onloadTurnstileCallback = function () {
+                turnstile.render("#turnstileChallenge", {
+                    // sitekey: "1x00000000000000000000AA", // Testing only
+                    sitekey: "0x4AAAAAAAKQkSYo7sJZnyVs", // Production
+                    callback: function (token) {
+                        canContinue = true;
+                        tsToken = token;
+                    }
+                });
+            };
+
+            var locked = false;
+            $("#root").hide();
+            let token = getCookie("token");
+            $.ajax({
+                url: "/api/v1/user/verify_token.php",
+                headers: { Authorization: "Bearer " + token },
+                success: function (data) {
+                    let valid = data.valid;
+                    if (valid != "no") {
+                        window.location.replace("/");
+                    }
+                },
+            });
+            $(document).ready(function () {
+                if (locked != true) {
+                    $("#loader").fadeOut("fast");
+                    $("#root").fadeIn("fast");
+                } else {
+                    $("#loader").fadeOut("fast");
+                    window.location.replace("./locked.html");
+                }
+
+                let params = new URLSearchParams(window.location.search);
+                if (params.has("msg")) {
+                    $("#alert").removeClass("d-none");
+                    $("#alert-text").text(params.get("msg"));
+                }
+            });
+            // function login() {
+            //     var username = btoa($("#username").val());
+            //     var password = SHA512($("#password").val());
+            //     $("#loader").fadeIn("fast");
+            //     $("#root").fadeOut("fast");
+            //     $("#login-alert").fadeOut("fast");
+            //     $.ajax({
+            //         url: "/api/v1/user/login.php",
+            //         data: JSON.stringify({
+            //             username: username,
+            //             password: password,
+            //         }),
+            //         method: "POST",
+            //         headers: { "Content-Type": "application/json" },
+            //         success: function (data) {
+            //             // $("#login-alert").removeClass("alert-danger");
+            //             // $("#login-alert").removeClass("alert-warning");
+            //             // $("#login-alert").addClass("alert-success");
+            //             // $("#login-alert").fadeIn("fast");
+            //             // $("#login-alert-text").text("Success! Token: " + data.token);
+            //             setCookie("token", data.token, 7);
+            //             window.location.replace("./login.html");
+            //         },
+            //         error: function (data) {
+            //             if (
+            //                 data.responseJSON.code == "3" ||
+            //                 data.responseJSON.code == "4"
+            //             ) {
+            //                 $("#login-alert").removeClass("alert-danger");
+            //                 $("#login-alert").addClass("alert-warning");
+            //             } else if (data.responseJSON.code == "6") {
+            //                 window.location.replace("./locked.html");
+            //             } else {
+            //                 $("#login-alert").removeClass("alert-warning");
+            //                 $("#login-alert").addClass("alert-danger");
+            //             }
+            //             $("#login-alert").fadeIn("fast");
+            //             $("#login-alert-text").text(data.responseJSON.message);
+            //         },
+            //         complete: function () {
+            //             $("#loader").fadeOut("fast");
+            //             $("#root").fadeIn("fast");
+            //         },
+            //     });
+            // }
+            function sleep(ms) {
+                return new Promise((resolve) => setTimeout(resolve, ms));
+            }
+
+            async function register() {
+                $("#loader").fadeIn("fast");
+                $("#root").fadeOut("fast");
+
+                if(!canContinue) {
+                    $("#alert").removeClass("d-none");
+                    $("#alert-text").text("Please solve the captcha.");
+                    return;
+                }
+
+                const name = $("#username").val();
+                const email = $("#email").val();
+                const password = $("#password").val();
+                const password1 = $("#password1").val();
+                let result;
+
+                await sleep(250).then(async () => {
+                    result = await validate(name, email, password, password1);
+                });
+
+                if(result) {
+                    await $.ajax({
+                        url: '/api/v1/user/register.php',
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        data: JSON.stringify({
+                            "username": btoa(name),
+                            "email": btoa(email),
+                            "password": SHA512(password),
+                            "token": tsToken
+                        }),
+                        success: function (data) {
+                            setCookie("token", data.token, 7);
+                            sendEmail();
+                        }
+                    })
+                }
+            }
+
+            function sendEmail() {
+                $.ajax({
+                    url: "/api/v1/user/send_email.php",
+                    method: "POST",
+                    headers: { Authorization: "Bearer " + getCookie("token") },
+                    complete: function () {
+                        window.location.replace("/");
+                    }
+                })
+            }
+
+            async function validate(name, email, pwd, pwd1) {
+                const uname = validateUsername(name);
+                if (uname !== true) {
+                    $("#alert").removeClass("d-none");
+                    $("#alert-text").text(uname);
+                    $("#loader").fadeOut("fast");
+                    $("#root").fadeIn("fast");
+                    return false;
+                } else {
+                    await $.ajax({
+                        url: "/api/v1/user/check_user.php",
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        data: JSON.stringify({
+                            username: btoa(name),
+                        }),
+                        success: function (data) {
+                            if (data.exists == true) {
+                                $("#alert").removeClass("d-none");
+                                $("#alert-text").text("An account with this username already exists.");
+                                $("#loader").fadeOut("fast");
+                                $("#root").fadeIn("fast");
+                                return false;
+                            }
+                        },
+                    });
+                }
+                if (!validateEmail(email)) {
+                    $("#alert").removeClass("d-none");
+                    $("#alert-text").text("Invalid email address.");
+                    $("#loader").fadeOut("fast");
+                    $("#root").fadeIn("fast");
+                    return false;
+                } else {
+                    await $.ajax({
+                        url: "/api/v1/user/check_email.php",
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        data: JSON.stringify({
+                            email: btoa(email),
+                        }),
+                        success: function (data) {
+                            if (data.exists == true) {
+                                $("#alert").removeClass("d-none");
+                                $("#alert-text").text("This email address is already registered.");
+                                $("#loader").fadeOut("fast");
+                                $("#root").fadeIn("fast");
+                                return false;
+                            }
+                        },
+                    });
+                }
+                if (validatePwd(pwd, pwd1) != true) {
+                    const result = validatePwd(pwd, pwd1);
+                    $("#alert").removeClass("d-none");
+                    $("#alert-text").text(result);
+                    $("#loader").fadeOut("fast");
+                    $("#root").fadeIn("fast");
+                    return false;
+                }
+                return true;
+            }
+        </script>
+    </body>
+</html>

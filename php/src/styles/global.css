@@ -1,3 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=Inconsolata:wght@300&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inclusive+Sans&display=swap');
+
 body {
     margin: 0;
     padding: 0;
@@ -30,13 +33,14 @@ a.navbar-item:hover {
 } */
 
 .navbar {
-    margin:0;
+    margin: 0;
     padding-top: 10px;
     padding-left: 10px;
     width: 100%;
 }
 
-.navbar-item, .dropdown-item {
+.navbar-item,
+.dropdown-item {
     padding-right: 20px;
     cursor: pointer;
 }
@@ -125,4 +129,29 @@ a.navbar-item:hover {
     transform: translate(-50%, -50%);
     position: absolute;
     text-align: center;
+}
+
+.w-10 {
+    width: 10%;
+}
+
+.w-17 {
+    width: 17%;
+}
+
+.w-25 {
+    width: 25%;
+}
+
+.timerDisplay {
+    font-family: 'Inconsolata', monospace;
+    font-size: 96px;
+}
+
+.timerName {
+    font-family: 'Inclusive Sans', sans-serif;
+}
+
+.vh-90 {
+    height: 90vh;
 }

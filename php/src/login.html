@@ -54,10 +54,15 @@
                     <br />
                     <h3>Log in</h3>
                     <br />
-                    <div class="alert alert-warning" role="alert" data-bs-theme="dark" id="login-alert">
+                    <div
+                        class="alert alert-warning"
+                        role="alert"
+                        data-bs-theme="dark"
+                        id="login-alert"
+                    >
                         <span id="login-alert-text"></span>
                     </div>
-                    
+
                     <div class="mb-3 row">
                         <label for="username" class="col-sm-2 col-form-label"
                             >Username</label
@@ -84,6 +89,7 @@
                             />
                         </div>
                     </div>
+                    <div id="turnstileChallenge" class="mb-3"></div>
                     <div class="mb-3 row">
                         <button
                             class="btn btn-outline-light btn-sm"
@@ -92,6 +98,13 @@
                             Login
                         </button>
                     </div>
+                    <div id="loginWithGoogle"></div>
+                    <a
+                        class="link text-white link-underline-opacity-0 link-underline-opacity-75-hover link-underline-light link-offset-3-hover"
+                        href="register.html"
+                        ><i class="fas fa-arrow-left"></i> Don't have an
+                        account?</a
+                    >
                 </div>
                 <div class="col"></div>
             </div>
@@ -125,32 +138,62 @@
         <script src="scripts/sha512.js"></script>
         <script src="scripts/cookies.js"></script>
 
+        <!-- Turnstile -->
+        <script
+            src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback"
+            defer
+        ></script>
+        <script src="https://accounts.google.com/gsi/client" async></script>
+
         <script>
+            let canContinue = false;
+            let tsToken = "";
+            window.onloadTurnstileCallback = function () {
+                turnstile.render("#turnstileChallenge", {
+                    sitekey: "1x00000000000000000000AA", // Testing only
+                    // sitekey: "0x4AAAAAAAKQkSYo7sJZnyVs", // Production
+                    callback: function (token) {
+                        canContinue = true;
+                        tsToken = token;
+                    },
+                });
+            };
+
             var locked = false;
             $("#root").hide();
             $("#login-alert").hide();
-            let token = getCookie("token")
+            let token = getCookie("token");
             $.ajax({
                 url: "/api/v1/user/verify_token.php",
-                headers: {"Authorization": "Bearer " + token},
-                success: function(data) {
+                headers: { Authorization: "Bearer " + token },
+                success: function (data) {
                     let valid = data.valid;
-                    if(valid) {
-                        window.location.replace("./index.html");
+                    if (valid != "no") {
+                        window.location.replace("/");
                     }
+                },
+            });
+            let cbUrl;
+            $.ajax({
+                url: "/api/v1/user/get_google_auth_url.php",
+                success: function (data) {
+                    cbUrl = data.url;
+                },
+                complete: function() {
+                    $("#loginWithGoogle").append("<a href='" + cbUrl + "'>Google</a>");
                 }
-            })
+            });
             $(document).ready(function () {
-                if(locked != true) {
+                if (locked != true) {
                     $("#loader").fadeOut("fast");
                     $("#root").fadeIn("fast");
                 } else {
                     $("#loader").fadeOut("fast");
-                    window.location.replace("./locked.html")
+                    window.location.replace("./locked.html");
                 }
 
-                let params = new URLSearchParams(window.location.search)
-                if(params.has("msg")) {
+                let params = new URLSearchParams(window.location.search);
+                if (params.has("msg")) {
                     $("#login-alert").removeClass("alert-danger");
                     $("#login-alert").addClass("alert-warning");
                     $("#login-alert-text").text(params.get("msg"));
@@ -158,6 +201,13 @@
                 }
             });
             function login() {
+                if (!canContinue) {
+                    $("#login-alert").removeClass("alert-danger");
+                    $("#login-alert").addClass("alert-warning");
+                    $("#login-alert-text").text("Please solve the captcha.");
+                    $("#login-alert").fadeIn("fast");
+                    return;
+                }
                 var username = btoa($("#username").val());
                 var password = SHA512($("#password").val());
                 $("#loader").fadeIn("fast");
@@ -166,26 +216,30 @@
                 $.ajax({
                     url: "/api/v1/user/login.php",
                     data: JSON.stringify({
-                        "username": username,
-                        "password": password,
+                        username: username,
+                        password: password,
+                        token: tsToken,
                     }),
                     method: "POST",
-                    headers: {"Content-Type": "application/json"},
-                    success: function(data) {
+                    headers: { "Content-Type": "application/json" },
+                    success: function (data) {
                         // $("#login-alert").removeClass("alert-danger");
                         // $("#login-alert").removeClass("alert-warning");
                         // $("#login-alert").addClass("alert-success");
                         // $("#login-alert").fadeIn("fast");
                         // $("#login-alert-text").text("Success! Token: " + data.token);
                         setCookie("token", data.token, 7);
-                        window.location.replace("./login.html");
+                        window.location.replace("/");
                     },
-                    error: function(data) {
-                        if(data.responseJSON.code == "3" || data.responseJSON.code == "4"){
+                    error: function (data) {
+                        if (
+                            data.responseJSON.code == "3" ||
+                            data.responseJSON.code == "4"
+                        ) {
                             $("#login-alert").removeClass("alert-danger");
                             $("#login-alert").addClass("alert-warning");
                         } else if (data.responseJSON.code == "6") {
-                            window.location.replace("./locked.html")
+                            window.location.replace("./locked.html");
                         } else {
                             $("#login-alert").removeClass("alert-warning");
                             $("#login-alert").addClass("alert-danger");
@@ -193,10 +247,10 @@
                         $("#login-alert").fadeIn("fast");
                         $("#login-alert-text").text(data.responseJSON.message);
                     },
-                    complete: function() {
+                    complete: function () {
                         $("#loader").fadeOut("fast");
                         $("#root").fadeIn("fast");
-                    }
+                    },
                 });
             }
         </script>

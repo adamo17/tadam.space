@@ -48,6 +48,14 @@
                         <li class="nav-item nav-link">
                             <a
                                 class="link-light navbar-item link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover"
+                                href="/stopwatch"
+                            >
+                                Stopwatch
+                            </a>
+                        </li>
+                        <li class="nav-item nav-link">
+                            <a
+                                class="link-light navbar-item link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover"
                             >
                                 Issues
                             </a>
@@ -93,13 +101,6 @@
                     </div>
                 </div>
             </nav>
-
-            <a
-                class="link-light navbar-item link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover"
-                href="/projects/worktime/timer"
-            >
-                Go to timer
-            </a>
         </div>
 
         <!-- Loader -->
@@ -132,9 +133,23 @@
         <script>
             $("#root").hide();
             let token = getCookie("token");
+            if (token == "") {
+                window.location.replace(
+                    "/login.html?msg=You%20need%20to%20be%20logged%20in%20to%20view%20this%20page."
+                );
+            }
             $.ajax({
                 url: "/api/v1/user/verify_token.php",
                 headers: { Authorization: "Bearer " + token },
+                success: function (data) {
+                    if (data.valid == "0") {
+                        window.location.replace("/verification");
+                    } else if (data.valid == "no") {
+                        window.location.replace(
+                            "./login.html?msg=You%20need%20to%20be%20logged%20in%20to%20view%20this%20page."
+                        );
+                    }
+                },
                 error: function (data) {
                     window.location.replace(
                         "./login.html?msg=You%20need%20to%20be%20logged%20in%20to%20view%20this%20page."

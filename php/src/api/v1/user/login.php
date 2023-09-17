@@ -4,6 +4,9 @@ require_once "../core.php";
 $input = file_get_contents('php://input');
 $req = json_decode($input, true);
 
+// print_r($req);
+// print_r(getallheaders());
+
 if(!isset($req["username"]) || $req["username"] == "") {
     die(new ErrorMessage(ErrorType::BAD_REQUEST, "No username provided."));
 }

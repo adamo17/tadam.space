@@ -4,7 +4,7 @@ require_once "core.php";
 function connect()
 {
     try {
-        $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+        $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME, DB_PORT);
     } catch (Exception $e) {
         $err = new ErrorMessage(ErrorType::SERVER_ERROR, "Could not connect to the database. Please try again or contact the administrator.");
         die($err);
